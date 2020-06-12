@@ -1,8 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "BullCowCartridge.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 void UBullCowCartridge::BeginPlay() {
     Super::BeginPlay();
+    const FString WordListPath = FPaths::ProjectContentDir() / TEXT("WordLists/HiddenWordList.txt");
+    FFileHelper::LoadFileToStringArray(WordList, *WordListPath);
     SetupGame();
 }
 
@@ -47,6 +51,12 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess) {
         return;
     }
 
+    if (!IsIsogram(Guess)) {
+        PrintLine(TEXT("No repeating letters, guess again!"));
+        PrintLine(TEXT("You have %i lives remaining!"), Lives);
+        return;
+    }
+
     PrintLine(TEXT("Lost a life!"));
     --Lives;
 
@@ -59,4 +69,12 @@ void UBullCowCartridge::ProcessGuess(const FString& Guess) {
     }
 
     PrintLine(TEXT("Guess again, you have %i lives left!"), Lives);
+}
+
+bool UBullCowCartridge::IsIsogram(const FString& Word) const {
+    for (int32 Index = 0; Index < Word.Len() - 1; Index++)
+        for (int32 Comparison = Index + 1; Comparison < Word.Len(); Comparison++)
+            if (Word[Index] == Word[Comparison])
+                return false;
+    return true;
 }

@@ -7,6 +7,7 @@ void UBullCowCartridge::BeginPlay() {
     Super::BeginPlay();
     const FString WordListPath = FPaths::ProjectContentDir() / TEXT("WordLists/HiddenWordList.txt");
     FFileHelper::LoadFileToStringArray(WordList, *WordListPath);
+    GetValidWords();
     SetupGame();
 }
 
@@ -77,4 +78,10 @@ bool UBullCowCartridge::IsIsogram(const FString& Word) const {
             if (Word[Index] == Word[Comparison])
                 return false;
     return true;
+}
+
+void UBullCowCartridge::GetValidWords()  {
+    for (FString Word : WordList)
+        if (Word.Len() >= 4 && Word.Len() <= 8 && IsIsogram(Word))
+            ValidWords.Emplace(Word);
 }

@@ -5,23 +5,17 @@
 
 void UBullCowCartridge::BeginPlay() {
     Super::BeginPlay();
-    const FString WordListPath = FPaths::ProjectContentDir() / TEXT("WordLists/HiddenWordList.txt");
-    FFileHelper::LoadFileToStringArray(WordList, *WordListPath);
-    GetValidWords();
     SetupGame();
 }
 
-void UBullCowCartridge::OnInput(const FString& Input) {
-    if (bGameOver) {
-        ClearScreen();
-        SetupGame();
-    } else {
-        ProcessGuess(Input);
-    }
+void UBullCowCartridge::OnInput(const FString& PlayerInput) {
+    ClearScreen();
+    bGameOver ? SetupGame() : ProcessGuess(PlayerInput);
 }
 
 void UBullCowCartridge::SetupGame() {
-    HiddenWord = TEXT("About");
+    GetValidWords();
+    HiddenWord = WordList[FMath::RandRange(0, WordList.Num() - 1)];
     Lives = HiddenWord.Len();
     bGameOver = false;
 
@@ -80,8 +74,10 @@ bool UBullCowCartridge::IsIsogram(const FString& Word) const {
     return true;
 }
 
-void UBullCowCartridge::GetValidWords()  {
+void UBullCowCartridge::GetValidWords() {
+    const FString WordListPath = FPaths::ProjectContentDir() / TEXT("WordLists/HiddenWordList.txt");
+    FFileHelper::LoadFileToStringArray(WordList, *WordListPath);
     for (FString Word : WordList)
-        if (Word.Len() >= 4 && Word.Len() <= 8 && IsIsogram(Word))
-            ValidWords.Emplace(Word);
+        if (Word.Len() < 4 || Word.Len() > 8 || !IsIsogram(Word))
+            WordList.Remove(Word);
 }
